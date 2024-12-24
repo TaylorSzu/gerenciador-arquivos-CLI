@@ -3,7 +3,7 @@
   const emoji = require('emoji-cli');
 
   const icons = {
-    'default': emoji.get('page_facing_up'),
+    'default': '[FILE]',
     'folder': '[DIR]',
     '.txt': '[TXT]',
     '.jpg': '[IMG]',

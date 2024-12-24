@@ -7,15 +7,17 @@ function listDirectory(currentPath) {
     const files = fs.readdirSync(currentPath);
     return files.map(file => {
       const filePath = path.join(currentPath, file);
-      const stats = fs.statSync(filePath);
+      const stats = fs.lstatSync(filePath);  
       const icon = getIcon(filePath, stats.isDirectory());
-      console.log(`File: ${file}, Icon: ${icon}`); // Adicionado para depuração
-
       return {
         name: file,
         isDirectory: stats.isDirectory(),
         icon: icon
       };
+    }).sort((a, b) => {
+      if (a.isDirectory && !b.isDirectory) return -1;
+      if (!a.isDirectory && b.isDirectory) return 1;
+      return a.name.localeCompare(b.name);
     });
   } catch (error) {
     console.error('Erro ao listar o diretório:', error.message);
@@ -25,7 +27,11 @@ function listDirectory(currentPath) {
 
 function goBack(currentPath) {
   try {
-    return path.dirname(currentPath);
+    const previousPath = path.dirname(currentPath);
+    if (fs.existsSync(previousPath)) {
+      return previousPath;
+    }
+    return currentPath;
   } catch (error) {
     console.error('Erro ao voltar ao diretório anterior:', error.message);
     return currentPath;
