@@ -12,9 +12,13 @@
   "dependencies": {
     "blessed": "^0.1.81",
     "chalk": "^5.4.1",
+    "emoji-cli": "^1.0.0",
     "fs-extra": "^11.2.0",
+    "icon-gen": "^5.0.0",
     "inquirer": "^12.3.0",
     "keypress": "^0.2.1",
+    "mime-types": "^2.1.35",
+    "node-emoji": "^2.2.0",
     "readline": "^1.3.0"
   }
 }

@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { getIcon } = require('./icons');
 
 function listDirectory(currentPath) {
   try {
@@ -7,10 +8,13 @@ function listDirectory(currentPath) {
     return files.map(file => {
       const filePath = path.join(currentPath, file);
       const stats = fs.statSync(filePath);
+      const icon = getIcon(filePath, stats.isDirectory());
+      console.log(`File: ${file}, Icon: ${icon}`); // Adicionado para depuração
+
       return {
         name: file,
         isDirectory: stats.isDirectory(),
-        icon: stats.isDirectory() ? '📁' : '📄'
+        icon: icon
       };
     });
   } catch (error) {

@@ -46,7 +46,7 @@ fileList.on('select', (item, index) => {
   }
 });
 
-screen.key(['q', 'C-c'], () => process.exit(0));
+screen.key(['q', 'C-c', 'escape'], () => process.exit(0));
 
 screen.key(['space'], () => {
   currentPath = goBack(currentPath);
