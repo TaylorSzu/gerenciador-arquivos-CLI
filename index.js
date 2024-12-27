@@ -63,14 +63,14 @@ fileList.on('select', (item, index) => {
       currentPath = selectedPath;
       updateFileList();
     } else {
-      
+      console.log('Arquivo selecionado:', selectedPath);
     }
   } catch (error) {
     console.error('Erro ao acessar o caminho:', error.message);
   }
 });
 
-screen.key(['escape', 'C-c'], () => process.exit(0));
+screen.key(['q', 'C-c'], () => process.exit(0));
 
 screen.key(['space'], () => {
   try {
@@ -106,14 +106,24 @@ screen.key(['r'], () => {
         hover: {
           bg: 'green'
         }
-      }
+      },
+      keys: true
     });
     renamePrompt.input('Enter new name:', '', (err, newName) => {
       if (newName) {
         renameItem(currentPath, oldName, newName);
         updateFileList();
       }
+      renamePrompt.destroy();
+      screen.render();
     });
+
+    renamePrompt.key('backspace', () => {
+      renamePrompt.destroy();
+      screen.render();
+    });
+
+    screen.render();
   }
 });
 
@@ -151,7 +161,7 @@ screen.key(['d'], () => {
       deleteModal.destroy(); 
       screen.render();
     });
-    deleteModal.key('backspace', () => {
+    deleteModal.key('escape', () => {
       deleteModal.destroy();
       screen.render();
     });
