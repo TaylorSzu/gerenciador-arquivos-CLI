@@ -2,6 +2,8 @@ const blessed = require('blessed');
 const path = require('path');
 const fs = require('fs');
 const { listDirectory, goBack } = require('./navigate/index');
+const { renameItem } = require('./actions/rename');
+const { deleteItem } = require('./actions/delete');
 
 const screen = blessed.screen({
   smartCSR: true,
@@ -56,25 +58,108 @@ function updateFileList() {
 fileList.on('select', (item, index) => {
   const selectedFile = files[index];
   const selectedPath = path.join(currentPath, selectedFile.name);
-  if (fs.lstatSync(selectedPath).isDirectory()) {
-    currentPath = selectedPath;
-    updateFileList();
-  } else {
-    console.log('Arquivo selecionado:', selectedPath);
+  try {
+    if (fs.lstatSync(selectedPath).isDirectory()) {
+      currentPath = selectedPath;
+      updateFileList();
+    } else {
+      
+    }
+  } catch (error) {
+    console.error('Erro ao acessar o caminho:', error.message);
   }
 });
 
-screen.key(['q', 'C-c', 'escape'], () => process.exit(0));
+screen.key(['escape', 'C-c'], () => process.exit(0));
 
 screen.key(['space'], () => {
-  const previousPath = goBack(currentPath);
-  if (previousPath !== currentPath) {
-    currentPath = previousPath;
-    updateFileList();
+  try {
+    const previousPath = goBack(currentPath);
+    if (previousPath !== currentPath) {
+      currentPath = previousPath;
+      updateFileList();
+    }
+  } catch (error) {
+    console.error('Erro ao voltar ao diretório anterior:', error.message);
   }
 });
 
-// Redimensionamento dinâmico
+screen.key(['r'], () => {
+  const selectedIndex = fileList.selected;
+  const selectedFile = files[selectedIndex];
+  if (selectedFile) {
+    const oldName = selectedFile.name;
+    const renamePrompt = blessed.prompt({
+      parent: screen,
+      left: 'center',
+      top: 'center',
+      width: '50%',
+      height: 'shrink',
+      label: 'Rename File/Directory',
+      border: 'line',
+      style: {
+        fg: 'white',
+        bg: 'black',
+        border: {
+          fg: 'blue'
+        },
+        hover: {
+          bg: 'green'
+        }
+      }
+    });
+    renamePrompt.input('Enter new name:', '', (err, newName) => {
+      if (newName) {
+        renameItem(currentPath, oldName, newName);
+        updateFileList();
+      }
+    });
+  }
+});
+
+screen.key(['d'], () => {
+  const selectedIndex = fileList.selected;
+  const selectedFile = files[selectedIndex];
+  if (selectedFile) {
+    const itemName = selectedFile.name;
+    const deleteModal = blessed.question({
+      parent: screen,
+      left: 'center',
+      top: 'center',
+      width: '50%',
+      height: 'shrink',
+      label: 'Delete File/Directory',
+      border: 'line',
+      style: {
+        fg: 'white',
+        bg: 'black',
+        border: {
+          fg: 'red'
+        },
+        hover: {
+          bg: 'green'
+        }
+      },
+      keys: true
+    });
+
+    deleteModal.ask(`Are you sure you want to delete ${itemName}? (Enter to confirm, Backspace to cancel)`, (err, confirmed) => {
+      if (err || !confirmed) return;
+
+      deleteItem(currentPath, itemName);
+      updateFileList();
+      deleteModal.destroy(); 
+      screen.render();
+    });
+    deleteModal.key('backspace', () => {
+      deleteModal.destroy();
+      screen.render();
+    });
+
+    screen.render();
+  }
+});
+
 screen.on('resize', () => {
   dirLabel.width = '100%';
   fileList.width = '100%';
